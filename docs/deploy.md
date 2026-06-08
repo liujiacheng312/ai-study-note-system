@@ -50,7 +50,16 @@ spring:
     password: root
 ```
 
-AI 模块默认按真实大模型配置读取环境变量；如果没有配置 API Key，会自动降级为 mock 演示回答，保证系统仍可运行：
+AI 模块推荐通过管理员后台配置。系统启动并登录管理员账号后，进入“后台管理 - AI 配置”，可以维护：
+
+- 供应商：DeepSeek、OpenAI、阿里云百炼、智谱 AI、本地模型等
+- 调用模式：真实 API 或模拟返回
+- 接口地址：OpenAI-compatible `/chat/completions` 网关地址
+- 模型名称：如 `deepseek-chat`、`gpt-4o-mini`、`qwen-turbo`
+- API Key：保存时写入数据库，查询时脱敏显示
+- 失败降级：真实 API 调用失败后是否自动使用 mock 演示回答
+
+数据库首次没有配置记录时，后端会根据以下环境变量自动创建一条默认配置；如果没有配置 API Key，会自动降级为 mock 演示回答，保证系统仍可运行：
 
 ```yaml
 ainote:
@@ -62,7 +71,7 @@ ainote:
     mock-on-failure: ${AINOTE_AI_MOCK_ON_FAILURE:true}
 ```
 
-真实 AI 推荐启动方式如下。PowerShell 示例：
+首次初始化真实 AI 默认配置的 PowerShell 示例：
 
 ```powershell
 $env:SPRING_DATASOURCE_PASSWORD="你的MySQL密码"
@@ -81,7 +90,7 @@ $env:AINOTE_AI_API_KEY="你的OpenAI API Key"
 $env:AINOTE_AI_MODEL_NAME="gpt-4o-mini"
 ```
 
-如果希望真实 AI 调用失败时直接报错，而不是降级 mock，可设置：
+如果希望真实 AI 调用失败时直接报错，而不是降级 mock，可以在管理员后台关闭“失败降级”，或在首次初始化时设置：
 
 ```powershell
 $env:AINOTE_AI_MOCK_ON_FAILURE="false"
@@ -179,6 +188,6 @@ nginx -s reload
 | 数据库连接失败 | 检查 MySQL 是否启动、账号密码是否正确、数据库是否已导入 |
 | 跨域问题 | 后端已配置 CORS，生产环境建议通过 Nginx 反向代理统一域名 |
 | 登录 token 失效 | 重新登录，或调整 `ainote.jwt.expire-minutes` |
-| AI API Key 未配置 | 系统会降级为 mock 演示回答；配置 `AINOTE_AI_API_KEY` 后即调用真实大模型 |
+| AI API Key 未配置 | 登录管理员后台进入“AI 配置”填写 Key；未配置时系统会降级为 mock 演示回答 |
 | Maven 命令不存在 | 安装 Maven 3.8+ 并配置 PATH |
 | npm install 慢 | 可切换国内镜像源或使用 pnpm/npm 缓存 |

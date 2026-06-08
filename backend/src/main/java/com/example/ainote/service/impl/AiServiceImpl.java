@@ -5,16 +5,17 @@ import com.example.ainote.dto.AiChatRequest;
 import com.example.ainote.dto.AiSummaryRequest;
 import com.example.ainote.dto.AiTagRequest;
 import com.example.ainote.entity.AiChatRecord;
+import com.example.ainote.entity.AiConfig;
 import com.example.ainote.entity.AiUsageLog;
 import com.example.ainote.mapper.AiChatRecordMapper;
 import com.example.ainote.mapper.AiUsageLogMapper;
+import com.example.ainote.service.AiConfigService;
 import com.example.ainote.service.AiService;
 import com.example.ainote.util.SecurityUtils;
 import com.example.ainote.vo.AiChatVO;
 import com.example.ainote.vo.AiSummaryVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,24 +36,15 @@ import java.util.Map;
 public class AiServiceImpl implements AiService {
     private final AiUsageLogMapper aiUsageLogMapper;
     private final AiChatRecordMapper aiChatRecordMapper;
-
-    @Value("${ainote.ai.mode:real}")
-    private String mode;
-    @Value("${ainote.ai.api-base-url:}")
-    private String apiBaseUrl;
-    @Value("${ainote.ai.api-key:}")
-    private String apiKey;
-    @Value("${ainote.ai.model-name:deepseek-chat}")
-    private String modelName;
-    @Value("${ainote.ai.mock-on-failure:true}")
-    private Boolean mockOnFailure;
+    private final AiConfigService aiConfigService;
 
     @Override
     public AiSummaryVO summary(AiSummaryRequest request, Long noteId) {
         String prompt = "请为下面的学习笔记生成结构化结果，必须包含：知识点摘要、学习重点、考试重点、学习建议。"
                 + "\n标题：" + request.getTitle()
                 + "\n正文：" + request.getContent();
-        String real = callRealModel("你是高校学习笔记整理助手，请用简体中文回答，语言清晰，适合大学生复习。", prompt);
+        AiConfig config = aiConfigService.getCurrentConfig();
+        String real = callRealModel(config, "你是高校学习笔记整理助手，请用简体中文回答，语言清晰，适合大学生复习。", prompt);
         AiSummaryVO vo;
         if (StringUtils.hasText(real)) {
             vo = new AiSummaryVO(
@@ -68,13 +61,15 @@ public class AiServiceImpl implements AiService {
                     "重点关注概念辨析、状态流转、接口设计、数据库关系和实际应用场景。",
                     "建议先阅读摘要形成整体认识，再根据重点内容制作复习提纲，最后通过问答检查薄弱知识点。");
         }
-        logUsage(noteId, "SUMMARY", prompt.length() / 2, (vo.getSummary() + vo.getKeyPoints()).length() / 2, "SUCCESS");
+        logUsage(noteId, "SUMMARY", prompt.length() / 2, (vo.getSummary() + vo.getKeyPoints()).length() / 2, StringUtils.hasText(real) ? "SUCCESS" : "MOCK_FALLBACK");
         return vo;
     }
 
     @Override
     public List<String> recommendTags(AiTagRequest request, Long noteId) {
-        String real = callRealModel("请只返回 3 到 6 个简体中文学习标签，使用逗号分隔，不要输出解释。",
+        AiConfig config = aiConfigService.getCurrentConfig();
+        String real = callRealModel(config,
+                "请只返回 3 到 6 个简体中文学习标签，使用逗号分隔，不要输出解释。",
                 request.getTitle() + "\n" + request.getContent());
         List<String> tags;
         if (StringUtils.hasText(real)) {
@@ -95,29 +90,30 @@ public class AiServiceImpl implements AiService {
                 tags = List.of("课程复习", "学习笔记", "知识整理", "重点提取");
             }
         }
-        logUsage(noteId, "TAGS", request.getContent().length() / 2, tags.toString().length() / 2, "SUCCESS");
+        logUsage(noteId, "TAGS", request.getContent().length() / 2, tags.toString().length() / 2, StringUtils.hasText(real) ? "SUCCESS" : "MOCK_FALLBACK");
         return tags;
     }
 
     @Override
     public AiChatVO chat(AiChatRequest request) {
+        AiConfig config = aiConfigService.getCurrentConfig();
         String prompt = (StringUtils.hasText(request.getContext()) ? request.getContext() + "\n" : "") + request.getQuestion();
-        String answer = callRealModel("你是智学 AI 学习笔记系统的真实 AI 问答助手。请用简体中文回答，分点说明，避免编造事实。", prompt);
+        String answer = callRealModel(config, "你是智学 AI 学习笔记系统的真实 AI 问答助手。请用简体中文回答，分点说明，避免编造事实。", prompt);
         boolean realAnswer = StringUtils.hasText(answer);
         if (!realAnswer) {
-            if (isRealMode() && Boolean.FALSE.equals(mockOnFailure)) {
-                throw new BusinessException("真实 AI 调用失败，请检查 AINOTE_AI_API_KEY、AINOTE_AI_API_BASE_URL 和模型名称配置");
+            if (isRealMode(config) && !isMockOnFailure(config)) {
+                throw new BusinessException("真实 AI 调用失败，请检查后台 AI API 配置中的 API Key、接口地址和模型名称");
             }
             answer = "当前未检测到可用的真实 AI API Key，系统已临时使用演示回答。针对你的问题：“"
                     + request.getQuestion()
-                    + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。配置 AINOTE_AI_API_KEY 后，本页面将调用真实大模型回答。";
+                    + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。管理员在后台 AI API 配置页填写 Key 后，本页面将调用真实大模型回答。";
         }
         Long userId = SecurityUtils.getCurrentUserId();
         AiChatRecord record = new AiChatRecord();
         record.setUserId(userId);
         record.setQuestion(request.getQuestion());
         record.setAnswer(answer);
-        record.setModelName(realAnswer ? modelName : "mock-ai");
+        record.setModelName(realAnswer ? config.getModelName() : "mock-ai");
         aiChatRecordMapper.insert(record);
         logUsage(null, "CHAT", prompt.length() / 2, answer.length() / 2, realAnswer ? "SUCCESS" : "MOCK_FALLBACK");
         return new AiChatVO(answer, record.getModelName());
@@ -133,24 +129,28 @@ public class AiServiceImpl implements AiService {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private String callRealModel(String systemPrompt, String userPrompt) {
-        if (!isRealMode() || !StringUtils.hasText(apiKey) || !StringUtils.hasText(apiBaseUrl)) {
+    private String callRealModel(AiConfig config, String systemPrompt, String userPrompt) {
+        if (!isRealMode(config)
+                || config.getEnabled() == null
+                || config.getEnabled() != 1
+                || !StringUtils.hasText(config.getApiKey())
+                || !StringUtils.hasText(config.getApiBaseUrl())) {
             return null;
         }
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
+            headers.setBearerAuth(config.getApiKey());
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             Map<String, Object> body = new LinkedHashMap<>();
-            body.put("model", modelName);
+            body.put("model", config.getModelName());
             body.put("messages", List.of(
                     Map.of("role", "system", "content", systemPrompt),
                     Map.of("role", "user", "content", userPrompt)));
-            body.put("temperature", 0.3);
+            body.put("temperature", temperature(config));
 
             ResponseEntity<Map> response = new RestTemplate().postForEntity(
-                    apiBaseUrl.replaceAll("/$", "") + "/chat/completions",
+                    config.getApiBaseUrl().replaceAll("/$", "") + "/chat/completions",
                     new HttpEntity<>(body, headers),
                     Map.class);
             Map responseBody = response.getBody();
@@ -171,8 +171,16 @@ public class AiServiceImpl implements AiService {
         }
     }
 
-    private boolean isRealMode() {
-        return "real".equalsIgnoreCase(mode);
+    private boolean isRealMode(AiConfig config) {
+        return config != null && "real".equalsIgnoreCase(config.getMode());
+    }
+
+    private boolean isMockOnFailure(AiConfig config) {
+        return config == null || config.getMockOnFailure() == null || config.getMockOnFailure() == 1;
+    }
+
+    private BigDecimal temperature(AiConfig config) {
+        return config.getTemperature() == null ? new BigDecimal("0.30") : config.getTemperature();
     }
 
     private void logUsage(Long noteId, String aiType, int inputTokens, int outputTokens, String status) {

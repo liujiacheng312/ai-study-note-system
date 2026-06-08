@@ -527,6 +527,79 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 | 操作日志分页 | `/api/admin/operation-logs/page` | GET | ADMIN | 查看后台操作日志 |
 | 登录日志分页 | `/api/admin/login-logs/page` | GET | ADMIN | 查看登录成功和失败记录 |
 
+### 12.1 查询 AI API 配置
+
+| 项目 | 内容 |
+| --- | --- |
+| 接口名称 | 查询 AI API 配置 |
+| 请求路径 | `/api/admin/ai-config` |
+| 请求方式 | GET |
+| 权限要求 | ADMIN |
+| 业务说明 | 查询当前 AI 供应商、调用模式、接口地址、模型名称和降级策略。API Key 只返回脱敏结果，不返回明文。 |
+
+响应示例：
+```json
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "provider": "DeepSeek",
+    "mode": "real",
+    "apiBaseUrl": "https://api.deepseek.com/v1",
+    "maskedApiKey": "sk-****abcd",
+    "apiKeyConfigured": true,
+    "modelName": "deepseek-chat",
+    "temperature": 0.30,
+    "mockOnFailure": true,
+    "enabled": 1,
+    "remark": "答辩演示使用"
+  }
+}
+```
+
+### 12.2 保存 AI API 配置
+
+| 项目 | 内容 |
+| --- | --- |
+| 接口名称 | 保存 AI API 配置 |
+| 请求路径 | `/api/admin/ai-config` |
+| 请求方式 | PUT |
+| 权限要求 | ADMIN |
+| 业务说明 | 更新真实 AI 调用配置。`apiKey` 留空表示保留原 Key；填写新 Key 后会覆盖旧 Key。 |
+
+请求示例：
+```json
+{
+  "provider": "DeepSeek",
+  "mode": "real",
+  "apiBaseUrl": "https://api.deepseek.com/v1",
+  "apiKey": "sk-xxxx",
+  "modelName": "deepseek-chat",
+  "temperature": 0.30,
+  "mockOnFailure": true,
+  "enabled": 1,
+  "remark": "真实 AI 问答演示配置"
+}
+```
+
+响应示例：
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "provider": "DeepSeek",
+    "mode": "real",
+    "apiBaseUrl": "https://api.deepseek.com/v1",
+    "maskedApiKey": "sk-****xxxx",
+    "apiKeyConfigured": true,
+    "modelName": "deepseek-chat",
+    "mockOnFailure": true,
+    "enabled": 1
+  }
+}
+```
+
 ## 13. 错误码
 
 | code | 说明 |

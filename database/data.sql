@@ -41,6 +41,9 @@ INSERT INTO announcement (id, title, content, status) VALUES
 (1, '系统试运行通知', '智学 AI 学习笔记系统已完成基础功能开发，欢迎同学们体验笔记管理、AI 摘要和学习统计功能。', 1),
 (2, '课程答辩准备提示', '请提前准备项目运行环境、GitHub 提交记录、数据库脚本和演示账号。', 1);
 
+INSERT INTO ai_config (id, provider, mode, api_base_url, api_key, model_name, temperature, mock_on_failure, enabled, remark) VALUES
+(1, 'DeepSeek', 'real', 'https://api.deepseek.com/v1', NULL, 'deepseek-chat', 0.30, 1, 1, '管理员可在后台配置真实 AI API Key。');
+
 INSERT INTO ai_chat_record (user_id, question, answer, model_name) VALUES
 (2, '如何复习 Spring Boot？', '建议从项目结构、接口设计、Spring Security、MyBatis Plus 和部署流程五个方面整理复习提纲。', 'mock-ai');
 

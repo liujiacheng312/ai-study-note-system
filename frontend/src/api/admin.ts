@@ -20,5 +20,7 @@ export const adminApi = {
   updateAnnouncement: (id: number, data: unknown) => request.put(`/api/admin/announcements/${id}`, data),
   deleteAnnouncement: (id: number) => request.delete(`/api/admin/announcements/${id}`),
   comments: (params: unknown) => request.get('/api/admin/comments/page', { params }),
-  auditComment: (id: number, status: number) => request.put(`/api/admin/comments/${id}/audit`, null, { params: { status } })
+  auditComment: (id: number, status: number) => request.put(`/api/admin/comments/${id}/audit`, null, { params: { status } }),
+  aiConfig: () => request.get('/api/admin/ai-config'),
+  updateAiConfig: (data: unknown) => request.put('/api/admin/ai-config', data)
 }

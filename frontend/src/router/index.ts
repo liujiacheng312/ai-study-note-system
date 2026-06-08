@@ -26,7 +26,8 @@ const router = createRouter({
         { path: 'admin/notes', meta: { admin: true }, component: () => import('@/views/admin/NoteManage.vue') },
         { path: 'admin/categories', meta: { admin: true }, component: () => import('@/views/admin/CategoryManage.vue') },
         { path: 'admin/tags', meta: { admin: true }, component: () => import('@/views/admin/TagManage.vue') },
-        { path: 'admin/announcements', meta: { admin: true }, component: () => import('@/views/admin/AnnouncementManage.vue') }
+        { path: 'admin/announcements', meta: { admin: true }, component: () => import('@/views/admin/AnnouncementManage.vue') },
+        { path: 'admin/ai-config', meta: { admin: true }, component: () => import('@/views/admin/AiConfigManage.vue') }
       ]
     }
   ]

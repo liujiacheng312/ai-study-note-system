@@ -59,7 +59,11 @@ mvn spring-boot:run
 
 接口文档：`http://localhost:8080/doc.html`
 
-真实 AI 问答推荐通过环境变量配置 API Key。以 DeepSeek 为例：
+真实 AI 问答推荐在管理员后台配置：登录 `admin / 123456` 后进入“后台管理 - AI 配置”，填写供应商、接口地址、模型名称和 API Key，保存后 AI 摘要、AI 标签推荐和 AI 问答会调用真实大模型。
+
+系统支持 OpenAI-compatible `/chat/completions` 格式，已内置 DeepSeek、OpenAI、阿里云百炼、智谱 AI 和本地模型网关常用模板。API Key 查询时会脱敏显示；留空保存表示保留原 Key。
+
+也可以在首次初始化默认配置时通过环境变量预置。以 DeepSeek 为例：
 
 ```powershell
 $env:SPRING_DATASOURCE_PASSWORD="你的MySQL密码"
@@ -70,7 +74,7 @@ $env:AINOTE_AI_MODEL_NAME="deepseek-chat"
 java -jar target/ai-study-note-backend.jar --server.port=8081
 ```
 
-AI 问答页会显示实际模型名称；没有配置 Key 时会显示 `mock-ai` 并降级演示。
+AI 问答页会显示实际模型名称；没有配置 Key 或真实调用失败且开启降级时，会显示 `mock-ai` 并使用演示回答。
 
 ## 前端启动
 
@@ -102,7 +106,7 @@ npm run dev
 - 前后端分离架构清晰，接口统一采用 RESTful 风格
 - Spring Security + JWT 实现登录认证和 RBAC 权限控制
 - 笔记状态流转覆盖草稿、AI处理、发布、归档、删除完整生命周期
-- AI 模块支持 mock 模式和 OpenAI 兼容真实 API 模式
+- AI 模块支持后台配置 API Key、mock 模式和 OpenAI 兼容真实 API 模式
 - ECharts 学习统计图表适合课程答辩展示
 - 文档、SQL、测试用例、部署说明、论文和答辩材料齐全
 

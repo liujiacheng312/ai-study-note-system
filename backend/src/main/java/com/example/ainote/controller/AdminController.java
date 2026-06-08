@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.ainote.common.PageResult;
 import com.example.ainote.common.Result;
+import com.example.ainote.dto.AiConfigRequest;
 import com.example.ainote.dto.AnnouncementRequest;
 import com.example.ainote.dto.CategoryRequest;
 import com.example.ainote.dto.TagRequest;
@@ -17,6 +18,7 @@ import com.example.ainote.entity.OperationLog;
 import com.example.ainote.entity.Tag;
 import com.example.ainote.entity.SysUser;
 import com.example.ainote.service.AnnouncementService;
+import com.example.ainote.service.AiConfigService;
 import com.example.ainote.service.CategoryService;
 import com.example.ainote.service.CommentService;
 import com.example.ainote.service.LoginLogService;
@@ -26,6 +28,7 @@ import com.example.ainote.service.StatisticsService;
 import com.example.ainote.service.SysUserService;
 import com.example.ainote.service.TagService;
 import com.example.ainote.vo.StatisticsOverviewVO;
+import com.example.ainote.vo.AiConfigVO;
 import com.example.ainote.vo.UserVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +48,7 @@ import java.util.List;
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
+    private final AiConfigService aiConfigService;
     private final SysUserService sysUserService;
     private final NoteService noteService;
     private final CategoryService categoryService;
@@ -206,6 +210,16 @@ public class AdminController {
     @GetMapping("/statistics/overview")
     public Result<StatisticsOverviewVO> adminOverview() {
         return Result.success(statisticsService.overview(true));
+    }
+
+    @GetMapping("/ai-config")
+    public Result<AiConfigVO> aiConfig() {
+        return Result.success(aiConfigService.getConfigVO());
+    }
+
+    @PutMapping("/ai-config")
+    public Result<AiConfigVO> updateAiConfig(@Valid @RequestBody AiConfigRequest request) {
+        return Result.success(aiConfigService.updateConfig(request));
     }
 
     @GetMapping("/operation-logs/page")

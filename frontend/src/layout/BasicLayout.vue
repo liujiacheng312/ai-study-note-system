@@ -17,6 +17,7 @@
           <el-menu-item index="/admin/categories">分类管理</el-menu-item>
           <el-menu-item index="/admin/tags">标签管理</el-menu-item>
           <el-menu-item index="/admin/announcements">公告管理</el-menu-item>
+          <el-menu-item index="/admin/ai-config">AI 配置</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>

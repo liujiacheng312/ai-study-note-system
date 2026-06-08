@@ -75,6 +75,10 @@ AI 在本项目中主要承担“辅助工程师”的角色，适合完成需�
 
 项目后端的 AI 问答助手支持真实大模型调用，采用 OpenAI-compatible `/chat/completions` 接口格式。可接入 DeepSeek、OpenAI、阿里云百炼、智谱 AI 或本地大模型网关。
 
+推荐配置方式：登录管理员账号 `admin / 123456`，进入“后台管理 - AI 配置”，选择供应商模板，填写接口地址、模型名称和 API Key 后保存。系统查询配置时只显示脱敏 Key，避免在页面和接口中暴露明文。
+
+如果不方便在页面中配置，也可以在数据库首次初始化默认配置时通过环境变量预置：
+
 推荐 DeepSeek 配置：
 
 ```powershell
@@ -93,4 +97,4 @@ $env:AINOTE_AI_API_KEY="你的OpenAI API Key"
 $env:AINOTE_AI_MODEL_NAME="gpt-4o-mini"
 ```
 
-系统不会把 API Key 写入代码仓库。AI 问答页面会显示本次回答使用的模型名称，例如 `deepseek-chat`、`gpt-4o-mini` 或 `mock-ai`。如果显示 `mock-ai`，说明当前没有配置真实 API Key 或真实调用失败。
+系统不会把 API Key 写入代码仓库。AI 问答页面会显示本次回答使用的模型名称，例如 `deepseek-chat`、`gpt-4o-mini` 或 `mock-ai`。如果显示 `mock-ai`，说明当前没有配置真实 API Key，或真实调用失败后触发了失败降级。
