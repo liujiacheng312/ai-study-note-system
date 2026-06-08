@@ -7,7 +7,7 @@
       </el-tag>
     </div>
 
-    <div class="panel">
+    <div class="panel config-panel">
       <el-alert
         title="API Key 查询时脱敏显示；留空保存会保留原 Key。停用个人配置后，AI 功能使用管理员全局配置。"
         type="info"
@@ -162,6 +162,10 @@ onMounted(load)
 .config-form {
   max-width: 760px;
   margin-top: 18px;
+}
+.config-panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(249,251,253,.96));
 }
 .hint {
   margin-top: 6px;

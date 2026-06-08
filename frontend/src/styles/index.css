@@ -1,57 +1,240 @@
 :root {
-  color: #1f2937;
-  background: #f5f7fb;
-  font-family: Inter, "Microsoft YaHei", Arial, sans-serif;
+  color: #172033;
+  background: #f6f8fb;
+  font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+  --app-bg: #f6f8fb;
+  --surface: #ffffff;
+  --surface-soft: #f9fbfd;
+  --line: #e5eaf2;
+  --line-strong: #d6deea;
+  --text: #172033;
+  --muted: #697589;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --teal: #0f9f8f;
+  --amber: #d97706;
+  --rose: #e11d48;
+  --shadow: 0 14px 32px rgba(31, 41, 55, .08);
+  --shadow-soft: 0 8px 20px rgba(31, 41, 55, .06);
+  --radius: 8px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
+  color: var(--text);
+  background:
+    linear-gradient(180deg, #f8fafc 0%, #f3f6fb 48%, #f6f8fb 100%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
 }
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  animation: page-in .18s ease-out;
 }
 
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
+.toolbar h2,
+.page h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 23px;
+  line-height: 1.25;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.page h3 {
+  margin: 0 0 12px;
+  color: #172033;
+  font-size: 17px;
+  font-weight: 700;
+}
+
 .panel {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 18px;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.panel.toolbar {
+  justify-content: flex-start;
+}
+
+.muted {
+  color: var(--muted);
+  line-height: 1.75;
 }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .chart-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .9fr);
+  gap: 18px;
 }
 
-.muted {
-  color: #6b7280;
+.el-button {
+  border-radius: 7px;
+  font-weight: 600;
 }
 
-@media (max-width: 900px) {
-  .stat-grid,
+.el-button--primary {
+  --el-button-bg-color: var(--primary);
+  --el-button-border-color: var(--primary);
+  --el-button-hover-bg-color: var(--primary-dark);
+  --el-button-hover-border-color: var(--primary-dark);
+}
+
+.el-button--success {
+  --el-button-bg-color: var(--teal);
+  --el-button-border-color: var(--teal);
+}
+
+.el-button.is-link {
+  padding: 4px 3px;
+  font-weight: 650;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: 7px;
+  box-shadow: 0 0 0 1px var(--line) inset;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover,
+.el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--line-strong) inset;
+}
+
+.el-table {
+  --el-table-border-color: #edf1f7;
+  --el-table-header-bg-color: #f8fafc;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.el-table th.el-table__cell {
+  color: #475467;
+  font-weight: 700;
+}
+
+.el-table td.el-table__cell {
+  color: #243047;
+}
+
+.el-pagination {
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.el-tag {
+  border-radius: 7px;
+  font-weight: 650;
+}
+
+.el-alert {
+  border-radius: var(--radius);
+}
+
+.el-form-item__label {
+  color: #445066;
+  font-weight: 650;
+}
+
+.md-editor,
+.md-editor-preview-wrapper {
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .chart-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    gap: 14px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .toolbar > * {
+    max-width: 100%;
   }
 }
