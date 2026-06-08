@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ai_study_note?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: root
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
   servlet:
     multipart:
       max-file-size: 10MB
@@ -35,10 +35,11 @@ ainote:
     secret: "ai-study-note-system-jwt-secret-2026-please-change-in-prod"
     expire-minutes: 1440
   ai:
-    mode: mock
-    api-base-url: https://api.openai.com/v1
-    api-key:
-    model-name: gpt-4o-mini
+    mode: ${AINOTE_AI_MODE:real}
+    api-base-url: ${AINOTE_AI_API_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${AINOTE_AI_API_KEY:}
+    model-name: ${AINOTE_AI_MODEL_NAME:deepseek-chat}
+    mock-on-failure: ${AINOTE_AI_MOCK_ON_FAILURE:true}
 
 logging:
   level:

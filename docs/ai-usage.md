@@ -71,3 +71,26 @@
 
 AI 在本项目中主要承担“辅助工程师”的角色，适合完成需求梳理、样板代码生成、文档初稿和问题排查。但项目能否真正运行，仍取决于开发者对业务流程、权限边界、数据库关系和接口联调的理解。通过本项目实践可以认识到，AI 可以显著提升软件生产效率，但不能替代软件工程中的分析、设计、测试和质量负责。
 
+## 7. 系统真实 AI 配置说明
+
+项目后端的 AI 问答助手支持真实大模型调用，采用 OpenAI-compatible `/chat/completions` 接口格式。可接入 DeepSeek、OpenAI、阿里云百炼、智谱 AI 或本地大模型网关。
+
+推荐 DeepSeek 配置：
+
+```powershell
+$env:AINOTE_AI_MODE="real"
+$env:AINOTE_AI_API_BASE_URL="https://api.deepseek.com/v1"
+$env:AINOTE_AI_API_KEY="你的DeepSeek API Key"
+$env:AINOTE_AI_MODEL_NAME="deepseek-chat"
+```
+
+推荐 OpenAI 配置：
+
+```powershell
+$env:AINOTE_AI_MODE="real"
+$env:AINOTE_AI_API_BASE_URL="https://api.openai.com/v1"
+$env:AINOTE_AI_API_KEY="你的OpenAI API Key"
+$env:AINOTE_AI_MODEL_NAME="gpt-4o-mini"
+```
+
+系统不会把 API Key 写入代码仓库。AI 问答页面会显示本次回答使用的模型名称，例如 `deepseek-chat`、`gpt-4o-mini` 或 `mock-ai`。如果显示 `mock-ai`，说明当前没有配置真实 API Key 或真实调用失败。

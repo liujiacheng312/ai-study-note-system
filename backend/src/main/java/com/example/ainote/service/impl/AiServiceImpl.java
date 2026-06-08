@@ -1,5 +1,6 @@
 package com.example.ainote.service.impl;
 
+import com.example.ainote.common.BusinessException;
 import com.example.ainote.dto.AiChatRequest;
 import com.example.ainote.dto.AiSummaryRequest;
 import com.example.ainote.dto.AiTagRequest;
@@ -12,6 +13,7 @@ import com.example.ainote.util.SecurityUtils;
 import com.example.ainote.vo.AiChatVO;
 import com.example.ainote.vo.AiSummaryVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,28 +28,37 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiServiceImpl implements AiService {
     private final AiUsageLogMapper aiUsageLogMapper;
     private final AiChatRecordMapper aiChatRecordMapper;
 
-    @Value("${ainote.ai.mode:mock}")
+    @Value("${ainote.ai.mode:real}")
     private String mode;
     @Value("${ainote.ai.api-base-url:}")
     private String apiBaseUrl;
     @Value("${ainote.ai.api-key:}")
     private String apiKey;
-    @Value("${ainote.ai.model-name:mock-ai}")
+    @Value("${ainote.ai.model-name:deepseek-chat}")
     private String modelName;
+    @Value("${ainote.ai.mock-on-failure:true}")
+    private Boolean mockOnFailure;
 
     @Override
     public AiSummaryVO summary(AiSummaryRequest request, Long noteId) {
-        String prompt = "请为学习笔记生成摘要、学习重点、考试重点和学习建议。标题：" + request.getTitle() + " 正文：" + request.getContent();
-        String real = callRealModel("你是高校学习笔记整理助手，请用中文输出结构化学习建议。", prompt);
+        String prompt = "请为下面的学习笔记生成结构化结果，必须包含：知识点摘要、学习重点、考试重点、学习建议。"
+                + "\n标题：" + request.getTitle()
+                + "\n正文：" + request.getContent();
+        String real = callRealModel("你是高校学习笔记整理助手，请用简体中文回答，语言清晰，适合大学生复习。", prompt);
         AiSummaryVO vo;
         if (StringUtils.hasText(real)) {
-            vo = new AiSummaryVO(real, real, "请重点掌握核心概念、适用场景和常见考点。", "建议按知识点制作复习卡片，并结合例题巩固。");
+            vo = new AiSummaryVO(
+                    real,
+                    "已由真实大模型生成，请结合摘要内容整理自己的复习提纲。",
+                    "请重点关注模型回答中的概念、流程、易错点和应用场景。",
+                    "建议将 AI 输出二次加工为自己的知识清单，并结合例题复习。");
         } else {
             String plain = request.getContent().replaceAll("[#>*`\\-]", "").trim();
             String sample = plain.length() > 80 ? plain.substring(0, 80) + "..." : plain;
@@ -63,11 +74,15 @@ public class AiServiceImpl implements AiService {
 
     @Override
     public List<String> recommendTags(AiTagRequest request, Long noteId) {
-        String real = callRealModel("请只返回3到6个中文学习标签，使用逗号分隔。", request.getTitle() + "\n" + request.getContent());
+        String real = callRealModel("请只返回 3 到 6 个简体中文学习标签，使用逗号分隔，不要输出解释。",
+                request.getTitle() + "\n" + request.getContent());
         List<String> tags;
         if (StringUtils.hasText(real)) {
-            tags = Arrays.stream(real.replace("，", ",").split(","))
-                    .map(String::trim).filter(StringUtils::hasText).limit(6).toList();
+            tags = Arrays.stream(real.replace("，", ",").replace("\n", ",").split(","))
+                    .map(String::trim)
+                    .filter(StringUtils::hasText)
+                    .limit(6)
+                    .toList();
         } else {
             String text = (request.getTitle() + request.getContent()).toLowerCase();
             if (text.contains("vue")) {
@@ -87,18 +102,24 @@ public class AiServiceImpl implements AiService {
     @Override
     public AiChatVO chat(AiChatRequest request) {
         String prompt = (StringUtils.hasText(request.getContext()) ? request.getContext() + "\n" : "") + request.getQuestion();
-        String answer = callRealModel("你是学习问答助手，回答要清晰、分点、适合大学生复习。", prompt);
-        if (!StringUtils.hasText(answer)) {
-            answer = "针对你的问题：“" + request.getQuestion() + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。若用于考试复习，可以把问题拆成定义题、简答题和应用题分别准备。";
+        String answer = callRealModel("你是智学 AI 学习笔记系统的真实 AI 问答助手。请用简体中文回答，分点说明，避免编造事实。", prompt);
+        boolean realAnswer = StringUtils.hasText(answer);
+        if (!realAnswer) {
+            if (isRealMode() && Boolean.FALSE.equals(mockOnFailure)) {
+                throw new BusinessException("真实 AI 调用失败，请检查 AINOTE_AI_API_KEY、AINOTE_AI_API_BASE_URL 和模型名称配置");
+            }
+            answer = "当前未检测到可用的真实 AI API Key，系统已临时使用演示回答。针对你的问题：“"
+                    + request.getQuestion()
+                    + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。配置 AINOTE_AI_API_KEY 后，本页面将调用真实大模型回答。";
         }
         Long userId = SecurityUtils.getCurrentUserId();
         AiChatRecord record = new AiChatRecord();
         record.setUserId(userId);
         record.setQuestion(request.getQuestion());
         record.setAnswer(answer);
-        record.setModelName(StringUtils.hasText(apiKey) && "real".equalsIgnoreCase(mode) ? modelName : "mock-ai");
+        record.setModelName(realAnswer ? modelName : "mock-ai");
         aiChatRecordMapper.insert(record);
-        logUsage(null, "CHAT", prompt.length() / 2, answer.length() / 2, "SUCCESS");
+        logUsage(null, "CHAT", prompt.length() / 2, answer.length() / 2, realAnswer ? "SUCCESS" : "MOCK_FALLBACK");
         return new AiChatVO(answer, record.getModelName());
     }
 
@@ -113,18 +134,21 @@ public class AiServiceImpl implements AiService {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private String callRealModel(String systemPrompt, String userPrompt) {
-        if (!"real".equalsIgnoreCase(mode) || !StringUtils.hasText(apiKey) || !StringUtils.hasText(apiBaseUrl)) {
+        if (!isRealMode() || !StringUtils.hasText(apiKey) || !StringUtils.hasText(apiBaseUrl)) {
             return null;
         }
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(apiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
+
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("model", modelName);
             body.put("messages", List.of(
                     Map.of("role", "system", "content", systemPrompt),
                     Map.of("role", "user", "content", userPrompt)));
+            body.put("temperature", 0.3);
+
             ResponseEntity<Map> response = new RestTemplate().postForEntity(
                     apiBaseUrl.replaceAll("/$", "") + "/chat/completions",
                     new HttpEntity<>(body, headers),
@@ -139,10 +163,16 @@ public class AiServiceImpl implements AiService {
             }
             Map choice = (Map) choices.get(0);
             Map message = (Map) choice.get("message");
-            return message == null ? null : String.valueOf(message.get("content"));
-        } catch (Exception ignored) {
+            Object content = message == null ? null : message.get("content");
+            return content == null ? null : String.valueOf(content);
+        } catch (Exception ex) {
+            log.warn("Real AI request failed: {}", ex.getMessage());
             return null;
         }
+    }
+
+    private boolean isRealMode() {
+        return "real".equalsIgnoreCase(mode);
     }
 
     private void logUsage(Long noteId, String aiType, int inputTokens, int outputTokens, String status) {

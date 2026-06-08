@@ -50,23 +50,41 @@ spring:
     password: root
 ```
 
-AI 默认使用 mock 模式，无需 API Key：
+AI 模块默认按真实大模型配置读取环境变量；如果没有配置 API Key，会自动降级为 mock 演示回答，保证系统仍可运行：
 
 ```yaml
 ainote:
   ai:
-    mode: mock
+    mode: ${AINOTE_AI_MODE:real}
+    api-base-url: ${AINOTE_AI_API_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${AINOTE_AI_API_KEY:}
+    model-name: ${AINOTE_AI_MODEL_NAME:deepseek-chat}
+    mock-on-failure: ${AINOTE_AI_MOCK_ON_FAILURE:true}
 ```
 
-如果需要真实 API 调用，可配置 OpenAI 兼容接口：
+真实 AI 推荐启动方式如下。PowerShell 示例：
 
-```yaml
-ainote:
-  ai:
-    mode: real
-    api-base-url: https://api.openai.com/v1
-    api-key: sk-xxxx
-    model-name: gpt-4o-mini
+```powershell
+$env:SPRING_DATASOURCE_PASSWORD="你的MySQL密码"
+$env:AINOTE_AI_MODE="real"
+$env:AINOTE_AI_API_BASE_URL="https://api.deepseek.com/v1"
+$env:AINOTE_AI_API_KEY="你的DeepSeek API Key"
+$env:AINOTE_AI_MODEL_NAME="deepseek-chat"
+java -jar target/ai-study-note-backend.jar --server.port=8081
+```
+
+OpenAI 示例：
+
+```powershell
+$env:AINOTE_AI_API_BASE_URL="https://api.openai.com/v1"
+$env:AINOTE_AI_API_KEY="你的OpenAI API Key"
+$env:AINOTE_AI_MODEL_NAME="gpt-4o-mini"
+```
+
+如果希望真实 AI 调用失败时直接报错，而不是降级 mock，可设置：
+
+```powershell
+$env:AINOTE_AI_MOCK_ON_FAILURE="false"
 ```
 
 ## 4. 后端启动
@@ -161,7 +179,6 @@ nginx -s reload
 | 数据库连接失败 | 检查 MySQL 是否启动、账号密码是否正确、数据库是否已导入 |
 | 跨域问题 | 后端已配置 CORS，生产环境建议通过 Nginx 反向代理统一域名 |
 | 登录 token 失效 | 重新登录，或调整 `ainote.jwt.expire-minutes` |
-| AI API Key 未配置 | 使用默认 mock 模式即可正常演示 |
+| AI API Key 未配置 | 系统会降级为 mock 演示回答；配置 `AINOTE_AI_API_KEY` 后即调用真实大模型 |
 | Maven 命令不存在 | 安装 Maven 3.8+ 并配置 PATH |
 | npm install 慢 | 可切换国内镜像源或使用 pnpm/npm 缓存 |
-

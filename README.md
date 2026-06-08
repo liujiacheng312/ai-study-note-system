@@ -59,6 +59,19 @@ mvn spring-boot:run
 
 接口文档：`http://localhost:8080/doc.html`
 
+真实 AI 问答推荐通过环境变量配置 API Key。以 DeepSeek 为例：
+
+```powershell
+$env:SPRING_DATASOURCE_PASSWORD="你的MySQL密码"
+$env:AINOTE_AI_MODE="real"
+$env:AINOTE_AI_API_BASE_URL="https://api.deepseek.com/v1"
+$env:AINOTE_AI_API_KEY="你的DeepSeek API Key"
+$env:AINOTE_AI_MODEL_NAME="deepseek-chat"
+java -jar target/ai-study-note-backend.jar --server.port=8081
+```
+
+AI 问答页会显示实际模型名称；没有配置 Key 时会显示 `mock-ai` 并降级演示。
+
 ## 前端启动
 
 ```bash
