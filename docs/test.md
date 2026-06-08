@@ -40,6 +40,7 @@
 | TC-015 | 收藏模块 | 收藏笔记 | PUBLISHED 笔记ID | 收藏成功，可在收藏中心查看 | 与预期一致 | 通过 |
 | TC-016 | 评论模块 | 评论笔记 | PUBLISHED 笔记ID + 评论内容 | 评论成功，详情页展示评论 | 与预期一致 | 通过 |
 | TC-017 | AI 配置 | 管理员保存真实 AI API 配置 | admin token + provider、apiBaseUrl、modelName、apiKey | 保存成功，查询接口返回脱敏 Key，AI 问答优先调用真实模型 | 与预期一致 | 通过 |
+| TC-018 | AI 配置 | 普通用户保存个人 AI API 配置 | user token + provider、apiBaseUrl、modelName、apiKey | 保存成功，返回 scope=USER；该用户 AI 调用优先使用个人配置 | 与预期一致 | 通过 |
 
 ## 4. 权限测试重点
 

@@ -214,12 +214,12 @@ public class AdminController {
 
     @GetMapping("/ai-config")
     public Result<AiConfigVO> aiConfig() {
-        return Result.success(aiConfigService.getConfigVO());
+        return Result.success(aiConfigService.getGlobalConfigVO());
     }
 
     @PutMapping("/ai-config")
     public Result<AiConfigVO> updateAiConfig(@Valid @RequestBody AiConfigRequest request) {
-        return Result.success(aiConfigService.updateConfig(request));
+        return Result.success(aiConfigService.updateGlobalConfig(request));
     }
 
     @GetMapping("/operation-logs/page")

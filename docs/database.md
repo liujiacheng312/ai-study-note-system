@@ -21,7 +21,7 @@
 | favorite | 收藏表 | 用户收藏公开笔记 |
 | comment | 评论表 | 笔记评论和回复 |
 | announcement | 公告表 | 管理员发布系统公告 |
-| ai_config | AI 配置表 | 保存真实 AI 供应商、接口地址、模型名称和 API Key |
+| ai_config | AI 配置表 | 保存管理员全局 AI 配置和普通用户个人 AI 配置 |
 | ai_chat_record | AI 问答记录表 | 保存用户问题和 AI 回答 |
 | ai_usage_log | AI 使用日志表 | 统计 AI 调用类型和次数 |
 | operation_log | 操作日志表 | 保存后台操作记录 |
@@ -70,7 +70,7 @@
 - 一个用户可以收藏多篇笔记，一篇笔记也可以被多个用户收藏，二者通过 `favorite` 形成多对多关系。
 - 一篇公开笔记可以有多条评论，`note.id` 与 `comment.note_id` 是一对多关系。
 - 一个用户可以产生多条 AI 问答记录和 AI 使用日志。
-- 系统保留一条当前 AI 配置记录，管理员可在后台维护真实大模型 API 参数。
+- `ai_config.scope=GLOBAL,user_id=0` 表示管理员全局配置；`scope=USER,user_id=用户ID` 表示普通用户个人配置。AI 调用时优先使用个人配置，个人配置不可用时使用全局配置。
 
 ## 5. 外键关系
 

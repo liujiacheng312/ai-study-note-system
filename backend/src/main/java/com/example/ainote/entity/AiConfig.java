@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class AiConfig {
     @TableId(type = IdType.AUTO)
     private Long id;
+    private String scope;
+    private Long userId;
     private String provider;
     private String mode;
     private String apiBaseUrl;

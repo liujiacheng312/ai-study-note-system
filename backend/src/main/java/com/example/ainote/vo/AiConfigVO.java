@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Data
 public class AiConfigVO {
     private Long id;
+    private String scope;
+    private Long userId;
     private String provider;
     private String mode;
     private String apiBaseUrl;
@@ -19,10 +21,17 @@ public class AiConfigVO {
     private Boolean mockOnFailure;
     private Integer enabled;
     private String remark;
+    private Boolean usingGlobalFallback;
 
     public static AiConfigVO from(AiConfig config) {
+        return from(config, false);
+    }
+
+    public static AiConfigVO from(AiConfig config, boolean usingGlobalFallback) {
         AiConfigVO vo = new AiConfigVO();
         vo.setId(config.getId());
+        vo.setScope(config.getScope());
+        vo.setUserId(config.getUserId());
         vo.setProvider(config.getProvider());
         vo.setMode(config.getMode());
         vo.setApiBaseUrl(config.getApiBaseUrl());
@@ -33,6 +42,7 @@ public class AiConfigVO {
         vo.setMockOnFailure(config.getMockOnFailure() != null && config.getMockOnFailure() == 1);
         vo.setEnabled(config.getEnabled());
         vo.setRemark(config.getRemark());
+        vo.setUsingGlobalFallback(usingGlobalFallback);
         return vo;
     }
 

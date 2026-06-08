@@ -151,6 +151,8 @@ CREATE TABLE announcement (
 
 CREATE TABLE ai_config (
   id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'AI配置ID',
+  scope VARCHAR(20) NOT NULL DEFAULT 'GLOBAL' COMMENT '配置范围：GLOBAL全局配置，USER用户个人配置',
+  user_id BIGINT NOT NULL DEFAULT 0 COMMENT '配置所属用户ID，GLOBAL配置为0',
   provider VARCHAR(50) NOT NULL DEFAULT 'DeepSeek' COMMENT '供应商名称，如DeepSeek/OpenAI/阿里云百炼/智谱AI/本地模型',
   mode VARCHAR(20) NOT NULL DEFAULT 'real' COMMENT '模式：real真实调用，mock模拟返回',
   api_base_url VARCHAR(255) NOT NULL COMMENT 'OpenAI兼容接口基础地址',
@@ -162,7 +164,8 @@ CREATE TABLE ai_config (
   remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
   create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  is_deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除'
+  is_deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+  UNIQUE KEY uk_ai_config_scope_user (scope, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI API配置表';
 
 CREATE TABLE ai_chat_record (

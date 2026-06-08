@@ -439,6 +439,62 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 | 请求方式 | GET |
 | 权限要求 | 登录用户 |
 
+### 7.5 查询个人 AI API 配置
+
+| 项目 | 内容 |
+| --- | --- |
+| 接口名称 | 查询个人 AI API 配置 |
+| 请求路径 | `/api/ai/config` |
+| 请求方式 | GET |
+| 权限要求 | 登录用户 |
+| 业务说明 | 查询当前用户的个人 AI 配置。如果个人配置不存在、停用或真实模式未填写 Key，返回结果中的 `usingGlobalFallback` 为 `true`，表示 AI 调用会使用管理员全局配置兜底。 |
+
+响应示例：
+```json
+{
+  "code": 200,
+  "data": {
+    "scope": "USER",
+    "userId": 2,
+    "provider": "DeepSeek",
+    "mode": "real",
+    "apiBaseUrl": "https://api.deepseek.com/v1",
+    "maskedApiKey": "",
+    "apiKeyConfigured": false,
+    "modelName": "deepseek-chat",
+    "temperature": 0.30,
+    "mockOnFailure": true,
+    "enabled": 0,
+    "usingGlobalFallback": true
+  }
+}
+```
+
+### 7.6 保存个人 AI API 配置
+
+| 项目 | 内容 |
+| --- | --- |
+| 接口名称 | 保存个人 AI API 配置 |
+| 请求路径 | `/api/ai/config` |
+| 请求方式 | PUT |
+| 权限要求 | 登录用户 |
+| 业务说明 | 保存当前用户自己的 AI API 配置，只影响当前用户。`apiKey` 留空表示保留原 Key。 |
+
+请求示例：
+```json
+{
+  "provider": "DeepSeek",
+  "mode": "real",
+  "apiBaseUrl": "https://api.deepseek.com/v1",
+  "apiKey": "sk-xxxx",
+  "modelName": "deepseek-chat",
+  "temperature": 0.30,
+  "mockOnFailure": true,
+  "enabled": 1,
+  "remark": "个人学习使用"
+}
+```
+
 ## 8. 收藏接口
 
 | 接口名称 | 请求路径 | 方法 | 权限 | 说明 |
@@ -527,15 +583,15 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 | 操作日志分页 | `/api/admin/operation-logs/page` | GET | ADMIN | 查看后台操作日志 |
 | 登录日志分页 | `/api/admin/login-logs/page` | GET | ADMIN | 查看登录成功和失败记录 |
 
-### 12.1 查询 AI API 配置
+### 12.1 查询全局 AI API 配置
 
 | 项目 | 内容 |
 | --- | --- |
-| 接口名称 | 查询 AI API 配置 |
+| 接口名称 | 查询全局 AI API 配置 |
 | 请求路径 | `/api/admin/ai-config` |
 | 请求方式 | GET |
 | 权限要求 | ADMIN |
-| 业务说明 | 查询当前 AI 供应商、调用模式、接口地址、模型名称和降级策略。API Key 只返回脱敏结果，不返回明文。 |
+| 业务说明 | 查询管理员维护的全局 AI 供应商、调用模式、接口地址、模型名称和降级策略。API Key 只返回脱敏结果，不返回明文。普通用户未启用个人配置时会使用该全局配置。 |
 
 响应示例：
 ```json
@@ -557,15 +613,15 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 }
 ```
 
-### 12.2 保存 AI API 配置
+### 12.2 保存全局 AI API 配置
 
 | 项目 | 内容 |
 | --- | --- |
-| 接口名称 | 保存 AI API 配置 |
+| 接口名称 | 保存全局 AI API 配置 |
 | 请求路径 | `/api/admin/ai-config` |
 | 请求方式 | PUT |
 | 权限要求 | ADMIN |
-| 业务说明 | 更新真实 AI 调用配置。`apiKey` 留空表示保留原 Key；填写新 Key 后会覆盖旧 Key。 |
+| 业务说明 | 更新管理员全局真实 AI 调用配置。`apiKey` 留空表示保留原 Key；填写新 Key 后会覆盖旧 Key。 |
 
 请求示例：
 ```json

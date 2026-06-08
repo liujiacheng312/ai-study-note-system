@@ -20,6 +20,7 @@ const router = createRouter({
         { path: 'notes/:id', component: () => import('@/views/note/NoteDetail.vue') },
         { path: 'favorites', component: () => import('@/views/favorite/Favorites.vue') },
         { path: 'ai/chat', component: () => import('@/views/ai/AiChat.vue') },
+        { path: 'ai/config', component: () => import('@/views/ai/AiConfig.vue') },
         { path: 'statistics', component: () => import('@/views/statistics/Statistics.vue') },
         { path: 'profile', component: () => import('@/views/profile/Profile.vue') },
         { path: 'admin/users', meta: { admin: true }, component: () => import('@/views/admin/UserManage.vue') },

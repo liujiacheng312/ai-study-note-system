@@ -9,6 +9,7 @@
         <el-menu-item index="/notes/public"><el-icon><Reading /></el-icon><span>公开广场</span></el-menu-item>
         <el-menu-item index="/favorites"><el-icon><Star /></el-icon><span>收藏中心</span></el-menu-item>
         <el-menu-item index="/ai/chat"><el-icon><ChatDotRound /></el-icon><span>AI 助手</span></el-menu-item>
+        <el-menu-item index="/ai/config"><el-icon><Setting /></el-icon><span>AI 配置</span></el-menu-item>
         <el-menu-item index="/statistics"><el-icon><TrendCharts /></el-icon><span>学习统计</span></el-menu-item>
         <el-sub-menu v-if="auth.isAdmin" index="/admin">
           <template #title><el-icon><Setting /></el-icon><span>后台管理</span></template>
