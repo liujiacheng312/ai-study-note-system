@@ -11,13 +11,17 @@ import com.example.ainote.dto.TagRequest;
 import com.example.ainote.entity.Announcement;
 import com.example.ainote.entity.Category;
 import com.example.ainote.entity.Comment;
+import com.example.ainote.entity.LoginLog;
 import com.example.ainote.entity.Note;
+import com.example.ainote.entity.OperationLog;
 import com.example.ainote.entity.Tag;
 import com.example.ainote.entity.SysUser;
 import com.example.ainote.service.AnnouncementService;
 import com.example.ainote.service.CategoryService;
 import com.example.ainote.service.CommentService;
+import com.example.ainote.service.LoginLogService;
 import com.example.ainote.service.NoteService;
+import com.example.ainote.service.OperationLogService;
 import com.example.ainote.service.StatisticsService;
 import com.example.ainote.service.SysUserService;
 import com.example.ainote.service.TagService;
@@ -47,6 +51,8 @@ public class AdminController {
     private final TagService tagService;
     private final AnnouncementService announcementService;
     private final CommentService commentService;
+    private final OperationLogService operationLogService;
+    private final LoginLogService loginLogService;
     private final StatisticsService statisticsService;
 
     @GetMapping("/user/page")
@@ -200,5 +206,21 @@ public class AdminController {
     @GetMapping("/statistics/overview")
     public Result<StatisticsOverviewVO> adminOverview() {
         return Result.success(statisticsService.overview(true));
+    }
+
+    @GetMapping("/operation-logs/page")
+    public Result<PageResult<OperationLog>> operationLogs(@RequestParam(defaultValue = "1") Long pageNo,
+                                                          @RequestParam(defaultValue = "10") Long pageSize) {
+        return Result.success(PageResult.from(operationLogService.page(
+                new Page<>(pageNo, pageSize),
+                new LambdaQueryWrapper<OperationLog>().orderByDesc(OperationLog::getCreateTime))));
+    }
+
+    @GetMapping("/login-logs/page")
+    public Result<PageResult<LoginLog>> loginLogs(@RequestParam(defaultValue = "1") Long pageNo,
+                                                  @RequestParam(defaultValue = "10") Long pageSize) {
+        return Result.success(PageResult.from(loginLogService.page(
+                new Page<>(pageNo, pageSize),
+                new LambdaQueryWrapper<LoginLog>().orderByDesc(LoginLog::getCreateTime))));
     }
 }

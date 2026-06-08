@@ -524,6 +524,8 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 | 删除违规笔记 | `/api/admin/notes/{id}` | DELETE | ADMIN | 删除笔记 |
 | 评论分页 | `/api/admin/comments/page` | GET | ADMIN | 查看评论 |
 | 评论审核 | `/api/admin/comments/{id}/audit` | PUT | ADMIN | status=0/1/2 |
+| 操作日志分页 | `/api/admin/operation-logs/page` | GET | ADMIN | 查看后台操作日志 |
+| 登录日志分页 | `/api/admin/login-logs/page` | GET | ADMIN | 查看登录成功和失败记录 |
 
 ## 13. 错误码
 
@@ -536,4 +538,3 @@ GET /api/notes/my?pageNo=1&pageSize=10&status=DRAFT
 | 404 | 资源不存在 |
 | 5001 | 业务处理失败 |
 | 500 | 系统异常 |
-
