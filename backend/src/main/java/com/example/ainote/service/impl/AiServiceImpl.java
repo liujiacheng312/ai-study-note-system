@@ -102,11 +102,11 @@ public class AiServiceImpl implements AiService {
         boolean realAnswer = StringUtils.hasText(answer);
         if (!realAnswer) {
             if (isRealMode(config) && !isMockOnFailure(config)) {
-                throw new BusinessException("真实 AI 调用失败，请检查后台 AI API 配置中的 API Key、接口地址和模型名称");
+                throw new BusinessException("真实 AI 调用失败，请检查个人 AI API 配置或管理员全局配置中的 API Key、接口地址和模型名称");
             }
             answer = "当前未检测到可用的真实 AI API Key，系统已临时使用演示回答。针对你的问题：“"
                     + request.getQuestion()
-                    + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。管理员在后台 AI API 配置页填写 Key 后，本页面将调用真实大模型回答。";
+                    + "”，建议先定位相关课程章节，再按“概念-原理-例子-易错点”四步整理。你可以在左侧 AI 配置页填写个人 API Key；未启用个人配置时，系统会使用管理员全局配置。";
         }
         Long userId = SecurityUtils.getCurrentUserId();
         AiChatRecord record = new AiChatRecord();
